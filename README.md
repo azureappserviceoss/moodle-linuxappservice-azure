@@ -20,4 +20,3 @@ With the button below, you can easily deploy the Moodle to Azure.
         https://<your sitename>.scm.azurewebsites.net/DebugConsole
         cd /home/site/wwwroot
       ```
-
