@@ -9162,6 +9162,9 @@ a.ygtvspacer:hover {
   flex-shrink: 0;
   overflow-x: hidden;
 }
+.message-drawer .footer-container textarea {
+  direction: ltr;
+}
 .message-drawer .matchtext {
   background-color: #ade6fe;
   color: #333;
@@ -9250,6 +9253,9 @@ a.ygtvspacer:hover {
 }
 .message-drawer .lazy-load-list {
   overflow-y: auto;
+}
+.dir-rtl .message-drawer {
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.08);
 }
 @media (max-width: 480px) {
   .messaging-area-container .messaging-area .messages-area.editing .messages-header {
@@ -16530,8 +16536,8 @@ body {
   border-top-left-radius: 4px;
 }
 .summaryimage {
-  height: 7rem;
-  width: 7rem;
+  height: 5rem;
+  width: 5rem;
   -webkit-border-radius: 50%;
   -moz-border-radius: 50%;
   border-radius: 50%;
@@ -16589,12 +16595,14 @@ form {
 .jsenabled .mform .collapsed .fcontainer {
   display: none;
 }
-.mform .fitem .fitemtitle div {
+.mform .fitem .fitemtitle > div:not(.mediaplugin) div {
   display: inline;
 }
-.mform .fitem .fitemtitle .mediaplugin,
-.mform .fitem .fitemtitle .mediaplugin div {
-  display: block;
+.mform .fitem .fitemtitle .mediaplugin > div {
+  margin: 0;
+}
+.que.match .mediaplugin {
+  width: 50vw;
 }
 #adminsettings .error,
 .loginpanel .error,
@@ -22391,4 +22399,7 @@ ul.indented-list {
 }
 .dir-ltr .dir-ltr-hide {
   display: none;
+}
+.font-weight-bold {
+  font-weight: 700 !important;
 }

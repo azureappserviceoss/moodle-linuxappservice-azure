@@ -5424,6 +5424,61 @@ class core_message_externallib_testcase extends externallib_advanced_testcase {
     }
 
     /**
+     * Tests retrieving conversations when a conversation contains a deleted from the database user.
+     */
+    public function test_get_conversations_deleted_user_from_database() {
+        global $DB;
+
+        $this->resetAfterTest();
+
+        $user1 = self::getDataGenerator()->create_user();
+        $user2 = self::getDataGenerator()->create_user();
+        $user3 = self::getDataGenerator()->create_user();
+
+        $conversation1 = \core_message\api::create_conversation(
+            \core_message\api::MESSAGE_CONVERSATION_TYPE_INDIVIDUAL,
+            [
+                $user1->id,
+                $user2->id
+            ],
+            'Individual conversation 1'
+        );
+
+        testhelper::send_fake_message_to_conversation($user1, $conversation1->id, 'A');
+        testhelper::send_fake_message_to_conversation($user2, $conversation1->id, 'B');
+        testhelper::send_fake_message_to_conversation($user1, $conversation1->id, 'C');
+
+        $conversation2 = \core_message\api::create_conversation(
+            \core_message\api::MESSAGE_CONVERSATION_TYPE_INDIVIDUAL,
+            [
+                $user1->id,
+                $user3->id
+            ],
+            'Individual conversation 2'
+        );
+
+        testhelper::send_fake_message_to_conversation($user1, $conversation2->id, 'A');
+        testhelper::send_fake_message_to_conversation($user3, $conversation2->id, 'B');
+        testhelper::send_fake_message_to_conversation($user1, $conversation2->id, 'C');
+
+        $this->setUser($user1);
+
+        // Delete the second user (from DB as well as this could happen in the past).
+        delete_user($user2);
+        $DB->delete_records('user', ['id' => $user2->id]);
+        $result = core_message_external::get_conversations($user1->id, 0, 20, 1, false);
+        $result = external_api::clean_returnvalue(core_message_external::get_conversations_returns(), $result);
+
+        $conversation = $result['conversations'];
+
+        $this->assertCount(1, $conversation);
+
+        $conversation = reset($conversation);
+
+        $this->assertEquals($conversation2->id, $conversation['id']);
+    }
+
+    /**
      * Test verifying the behaviour of get_conversations() when fetching favourite conversations.
      */
     public function test_get_conversations_favourite_conversations() {

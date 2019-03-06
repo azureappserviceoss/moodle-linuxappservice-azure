@@ -203,6 +203,7 @@ function quiz_delete_instance($id) {
     }
 
     quiz_grade_item_delete($quiz);
+    // We must delete the module record after we delete the grade item.
     $DB->delete_records('quiz', array('id' => $quiz->id));
 
     return true;
@@ -2181,6 +2182,12 @@ function mod_quiz_core_calendar_provide_event_action(calendar_event $event,
 
     // Check if quiz is closed, if so don't display it.
     if (!empty($quiz->timeclose) && $quiz->timeclose <= time()) {
+        return null;
+    }
+
+    if (!$quizobj->is_participant($USER->id)) {
+        // If the user is not a participant then they have
+        // no action to take. This will filter out the events for teachers.
         return null;
     }
 
