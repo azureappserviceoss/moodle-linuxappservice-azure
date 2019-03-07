@@ -783,6 +783,7 @@ class assign {
         }
 
         // Delete the instance.
+        // We must delete the module record after we delete the grade item.
         $DB->delete_records('assign', array('id'=>$this->get_instance()->id));
 
         return $result;
@@ -2921,7 +2922,11 @@ class assign {
                 $submitted = $assignment->count_submissions_with_status(ASSIGN_SUBMISSION_STATUS_SUBMITTED);
 
             } else if (has_capability('mod/assign:submit', $context)) {
-                $usersubmission = $assignment->get_user_submission($USER->id, false);
+                if ($assignment->get_instance()->teamsubmission) {
+                    $usersubmission = $assignment->get_group_submission($USER->id, 0, false);
+                } else {
+                    $usersubmission = $assignment->get_user_submission($USER->id, false);
+                }
 
                 if (!empty($usersubmission->status)) {
                     $submitted = get_string('submissionstatus_' . $usersubmission->status, 'assign');
@@ -5111,6 +5116,9 @@ class assign {
 
             $viewfullnames = has_capability('moodle/site:viewfullnames', $this->get_context());
 
+            if ($grade) {
+                \mod_assign\event\feedback_viewed::create_from_grade($this, $grade)->trigger();
+            }
             $feedbackstatus = new assign_feedback_status($gradefordisplay,
                                                   $gradeddate,
                                                   $grader,
@@ -8764,10 +8772,15 @@ class assign {
 
         // Trigger the course module viewed event.
         $assigninstance = $this->get_instance();
-        $event = \mod_assign\event\course_module_viewed::create(array(
-                'objectid' => $assigninstance->id,
-                'context' => $this->get_context()
-        ));
+        $params = [
+            'objectid' => $assigninstance->id,
+            'context' => $this->get_context()
+        ];
+        if ($this->is_blind_marking()) {
+            $params['anonymous'] = 1;
+        }
+
+        $event = \mod_assign\event\course_module_viewed::create($params);
 
         $event->add_record_snapshot('assign', $assigninstance);
         $event->trigger();
